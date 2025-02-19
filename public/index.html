@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Uploader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .animated-float {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .file-upload {
+            background: linear-gradient(145deg, #f3f4f6, #ffffff);
+            border: 2px dashed rgba(59, 130, 246, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: #3b82f6;
+            background: linear-gradient(145deg, #ffffff, #f3f4f6);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .file-item {
+            transition: all 0.2s ease;
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+        }
+
+        .file-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen p-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="text-center mb-8 animated-float">
+            <div class="inline-block p-6 bg-white rounded-full shadow-lg">
+                <i class="fas fa-cloud-upload-alt text-4xl text-blue-500"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mt-4 mb-2">Cute File Uploader</h1>
+            <p class="text-gray-600">Upload and manage your files with style!</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <form action="/upload" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <div class="file-upload p-8 rounded-lg text-center cursor-pointer">
+                    <input type="file" name="file" id="file" class="hidden" required>
+                    <label for="file" class="cursor-pointer">
+                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                        </svg>
+                        <p class="text-gray-600">Click to upload or drag and drop</p>
+                        <p class="text-sm text-gray-400">Max file size: 10MB</p>
+                    </label>
+                </div>
+                <div class="progress-bar hidden">
+                    <div class="progress-bar-inner" style="width: 0%"></div>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-md hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105">
+                    Upload File
+                </button>
+            </form>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Uploaded Files</h2>
+            <ul id="file-list" class="space-y-2">
+                <!-- Files will appear here -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file');
+        const uploadArea = document.querySelector('.file-upload');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressInner = document.querySelector('.progress-bar-inner');
+
+        // Handle file input changes
+        fileInput.addEventListener('change', (e) => {
+            if (fileInput.files.length > 0) {
+                uploadArea.classList.add('border-blue-500', 'bg-blue-50');
+            }
+        });
+
+        // Handle drag and drop
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.add('border-blue-500', 'bg-blue-50');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.remove('border-blue-500', 'bg-blue-50');
+            });
+        });
+
+        // Fetch and display uploaded files
+        fetch('/files')
+            .then(response => response.json())
+            .then(files => {
+                const fileList = document.getElementById('file-list');
+                files.forEach(file => {
+                    const li = document.createElement('li');
+                    li.className = 'file-item bg-gray-50 p-3 rounded-md hover:bg-gray-100';
+                    
+                    const a = document.createElement('a');
+                    a.href = file.url;
+                    a.className = 'flex items-center text-blue-600 hover:text-blue-700';
+                    a.innerHTML = `
+                        <i class="fas fa-file-download text-lg mr-2"></i>
+                        <span class="truncate">${file.name}</span>
+                    `;
+                    li.appendChild(a);
+                    fileList.appendChild(li);
+                });
+            });
+
+        // Handle form submission with progress
+        document.querySelector('form').addEventListener('submit', (e) => {
+            const formData = new FormData(e.target);
+            const xhr = new XMLHttpRequest();
+            
+            xhr.upload.addEventListener('progress', (event) => {
+                if (event.lengthComputable) {
+                    const percentComplete = (event.loaded / event.total) * 100;
+                    progressBar.classList.remove('hidden');
+                    progressInner.style.width = `${percentComplete}%`;
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                progressBar.classList.add('hidden');
+                window.location.reload();
+            });
+
+            xhr.open('POST', '/upload');
+            xhr.send(formData);
+            
+            e.preventDefault();
+        });
+    </script>
+</body>
+</html>
