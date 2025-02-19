@@ -2,8 +2,6 @@
 
 A simple yet powerful Node.js file uploader with a modern UI, built using Express and Multer.
 
-![File Uploader Screenshot](https://via.placeholder.com/800x500.png?text=File+Uploader+Screenshot)
-
 ## Features
 
 - 🌈 Attractive gradient design with animations
@@ -11,8 +9,6 @@ A simple yet powerful Node.js file uploader with a modern UI, built using Expres
 - 📊 Real-time upload progress indicator
 - 📂 List of uploaded files with download icons
 - 🎨 Modern, responsive UI using Tailwind CSS (via CDN)
-- ⚡️ Fast and efficient file handling
-- 🔒 Automatic file storage management
 - 📱 Mobile-friendly interface
 - ✨ Interactive hover and click effects
 - 🎉 Smooth transitions and animations
@@ -96,4 +92,3 @@ Distributed under the MIT License. See `LICENSE` for more information.
 Your Name - [@yourtwitter](https://twitter.com/yourtwitter) - your.email@example.com
 
 Project Link: [https://github.com/yourusername/file-uploader](https://github.com/yourusername/file-uploader)
-sdd
